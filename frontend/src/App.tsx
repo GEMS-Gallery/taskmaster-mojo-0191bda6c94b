@@ -158,7 +158,7 @@ const App: React.FC = () => {
   const filteredTasks = selectedCategory === 'All' ? tasks : tasks.filter(task => task.category === selectedCategory);
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-white">
       <Drawer
         variant="permanent"
         sx={{
@@ -172,7 +172,7 @@ const App: React.FC = () => {
       >
         <Toolbar />
         <div className="p-4">
-          <Typography variant="h6" className="mb-2">Categories</Typography>
+          <Typography variant="h6" className="mb-2 text-black">Categories</Typography>
           <List>
             <ListItem button onClick={() => setSelectedCategory('All')}>
               <ListItemIcon>
@@ -201,7 +201,6 @@ const App: React.FC = () => {
           <Button
             fullWidth
             variant="contained"
-            color="secondary"
             onClick={addCategory}
           >
             Add Category
@@ -209,9 +208,9 @@ const App: React.FC = () => {
         </div>
       </Drawer>
       <div className="flex-grow">
-        <AppBar position="static" className="bg-blue-600">
+        <AppBar position="static">
           <Toolbar>
-            <Typography variant="h6" className="flex-grow">
+            <Typography variant="h6" className="flex-grow text-black">
               Task List App
             </Typography>
           </Toolbar>
@@ -236,7 +235,7 @@ const App: React.FC = () => {
                     <span className="ml-2">{value}</span>
                   </div>
                 )}
-                className="bg-white rounded-full h-[40px]"
+                className="bg-gray-100 rounded-full h-[40px]"
               >
                 {categories.map((category) => (
                   <MenuItem key={Number(category.id)} value={category.name}>
@@ -250,7 +249,6 @@ const App: React.FC = () => {
             </FormControl>
             <Button
               variant="contained"
-              color="primary"
               startIcon={<AddIcon />}
               onClick={addTask}
               disabled={loading}
