@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { backend } from 'declarations/backend';
-import { AppBar, Toolbar, Typography, Container, List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, TextField, Button, Checkbox, CircularProgress, Drawer, Divider, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
-import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { AppBar, Toolbar, Typography, Container, List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, TextField, Button, Checkbox, CircularProgress, Drawer, Divider, Select, MenuItem, FormControl, InputLabel, ListItemIcon } from '@mui/material';
+import { Add as AddIcon, Delete as DeleteIcon, Work as WorkIcon, Person as PersonIcon, ShoppingCart as ShoppingIcon, Favorite as HealthIcon, AttachMoney as FinanceIcon, Category as CategoryIcon } from '@mui/icons-material';
 
 interface Task {
   id: bigint;
@@ -15,6 +15,17 @@ interface Category {
   id: bigint;
   name: string;
 }
+
+const getCategoryIcon = (categoryName: string) => {
+  switch (categoryName.toLowerCase()) {
+    case 'work': return <WorkIcon />;
+    case 'personal': return <PersonIcon />;
+    case 'shopping': return <ShoppingIcon />;
+    case 'health': return <HealthIcon />;
+    case 'finance': return <FinanceIcon />;
+    default: return <CategoryIcon />;
+  }
+};
 
 const App: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -119,10 +130,16 @@ const App: React.FC = () => {
           <Typography variant="h6" className="mb-2">Categories</Typography>
           <List>
             <ListItem button onClick={() => setSelectedCategory('All')}>
+              <ListItemIcon>
+                <CategoryIcon />
+              </ListItemIcon>
               <ListItemText primary="All" />
             </ListItem>
             {categories.map((category) => (
               <ListItem button key={Number(category.id)} onClick={() => setSelectedCategory(category.name)}>
+                <ListItemIcon>
+                  {getCategoryIcon(category.name)}
+                </ListItemIcon>
                 <ListItemText primary={category.name} />
               </ListItem>
             ))}
@@ -173,7 +190,10 @@ const App: React.FC = () => {
               >
                 {categories.map((category) => (
                   <MenuItem key={Number(category.id)} value={category.name}>
-                    {category.name}
+                    <ListItemIcon>
+                      {getCategoryIcon(category.name)}
+                    </ListItemIcon>
+                    <ListItemText primary={category.name} />
                   </MenuItem>
                 ))}
               </Select>
@@ -201,6 +221,9 @@ const App: React.FC = () => {
                     onChange={() => toggleTask(task.id)}
                     className="mr-2"
                   />
+                  <ListItemIcon>
+                    {getCategoryIcon(task.category)}
+                  </ListItemIcon>
                   <ListItemText
                     primary={task.description}
                     secondary={task.category}
