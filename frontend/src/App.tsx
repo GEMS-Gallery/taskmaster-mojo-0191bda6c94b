@@ -217,21 +217,26 @@ const App: React.FC = () => {
           </Toolbar>
         </AppBar>
         <Container maxWidth="sm" className="mt-8">
-          <div className="mb-4 flex flex-col">
+          <div className="mb-4 flex items-center">
             <TextField
-              fullWidth
               variant="outlined"
               placeholder="Add a new task"
               value={newTask}
               onChange={(e) => setNewTask(e.target.value)}
-              className="mb-2"
+              className="flex-grow mr-2"
             />
-            <FormControl fullWidth variant="outlined" className="mb-2">
-              <InputLabel>Category</InputLabel>
+            <FormControl variant="outlined" className="min-w-[120px]">
               <Select
                 value={taskCategory}
                 onChange={(e) => setTaskCategory(e.target.value as string)}
-                label="Category"
+                displayEmpty
+                renderValue={(value) => (
+                  <div className="flex items-center">
+                    {getCategoryIcon(value as string)}
+                    <span className="ml-2">{value}</span>
+                  </div>
+                )}
+                className="bg-white rounded-full h-[40px]"
               >
                 {categories.map((category) => (
                   <MenuItem key={Number(category.id)} value={category.name}>
@@ -249,8 +254,9 @@ const App: React.FC = () => {
               startIcon={<AddIcon />}
               onClick={addTask}
               disabled={loading}
+              className="ml-2"
             >
-              Add Task
+              Add
             </Button>
           </div>
           {loading ? (
