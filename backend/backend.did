@@ -1,13 +1,22 @@
 type Task = 
  record {
+   category: text;
    completed: bool;
    completionDate: opt int;
    description: text;
    id: nat;
  };
+type Category = 
+ record {
+   id: nat;
+   name: text;
+ };
 service : {
-  addTask: (text) -> (nat);
+  addCategory: (text) -> (nat);
+  addTask: (text, text) -> (nat);
   completeTask: (nat) -> ();
+  deleteCategory: (nat) -> ();
   deleteTask: (nat) -> ();
+  getCategories: () -> (vec Category) query;
   getTasks: () -> (vec Task) query;
 }
