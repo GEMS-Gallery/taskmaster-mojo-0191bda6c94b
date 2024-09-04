@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { backend } from 'declarations/backend';
-import { AppBar, Toolbar, Typography, Container, List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, TextField, Button, Checkbox, CircularProgress, Drawer, Divider } from '@mui/material';
+import { AppBar, Toolbar, Typography, Container, List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, TextField, Button, Checkbox, CircularProgress, Drawer, Divider, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
 
 interface Task {
@@ -22,6 +22,7 @@ const App: React.FC = () => {
   const [newTask, setNewTask] = useState('');
   const [newCategory, setNewCategory] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [taskCategory, setTaskCategory] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -44,6 +45,9 @@ const App: React.FC = () => {
     try {
       const fetchedCategories = await backend.getCategories();
       setCategories(fetchedCategories);
+      if (fetchedCategories.length > 0 && !taskCategory) {
+        setTaskCategory(fetchedCategories[0].name);
+      }
     } catch (error) {
       console.error('Error fetching categories:', error);
     }
@@ -53,7 +57,7 @@ const App: React.FC = () => {
     if (newTask.trim() === '') return;
     setLoading(true);
     try {
-      await backend.addTask(newTask, selectedCategory);
+      await backend.addTask(newTask, taskCategory);
       setNewTask('');
       await fetchTasks();
     } catch (error) {
@@ -151,15 +155,29 @@ const App: React.FC = () => {
           </Toolbar>
         </AppBar>
         <Container maxWidth="sm" className="mt-8">
-          <div className="mb-4 flex">
+          <div className="mb-4 flex flex-col">
             <TextField
               fullWidth
               variant="outlined"
               placeholder="Add a new task"
               value={newTask}
               onChange={(e) => setNewTask(e.target.value)}
-              className="mr-2"
+              className="mb-2"
             />
+            <FormControl fullWidth variant="outlined" className="mb-2">
+              <InputLabel>Category</InputLabel>
+              <Select
+                value={taskCategory}
+                onChange={(e) => setTaskCategory(e.target.value as string)}
+                label="Category"
+              >
+                {categories.map((category) => (
+                  <MenuItem key={Number(category.id)} value={category.name}>
+                    {category.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
             <Button
               variant="contained"
               color="primary"
@@ -167,7 +185,7 @@ const App: React.FC = () => {
               onClick={addTask}
               disabled={loading}
             >
-              Add
+              Add Task
             </Button>
           </div>
           {loading ? (

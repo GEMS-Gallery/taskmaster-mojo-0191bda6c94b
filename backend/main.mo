@@ -31,6 +31,9 @@ actor {
   let tasks = HashMap.fromIter<Nat, Task>(taskEntries.vals(), 0, Int.equal, Int.hash);
   let categories = HashMap.fromIter<Nat, Category>(categoryEntries.vals(), 0, Int.equal, Int.hash);
 
+  // Default categories
+  let defaultCategories = ["Work", "Personal", "Shopping", "Health", "Finance"];
+
   public func addTask(description: Text, category: Text) : async Nat {
     let id = taskIdCounter;
     taskIdCounter += 1;
@@ -83,7 +86,13 @@ actor {
   };
 
   public query func getCategories() : async [Category] {
-    Iter.toArray(categories.vals())
+    let defaultCats = Array.map<Text, Category>(defaultCategories, func(name) {
+      {
+        id = 0;
+        name = name;
+      }
+    });
+    Array.append(defaultCats, Iter.toArray(categories.vals()))
   };
 
   public func deleteCategory(id: Nat) : async () {
