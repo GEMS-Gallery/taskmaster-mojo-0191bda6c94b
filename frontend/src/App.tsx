@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { backend } from 'declarations/backend';
-import { AppBar, Toolbar, Typography, Container, List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, TextField, Button, Checkbox, CircularProgress, Drawer, Divider, Select, MenuItem, FormControl, InputLabel, ListItemIcon } from '@mui/material';
+import { AppBar, Toolbar, Typography, Container, List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, TextField, Button, Checkbox, CircularProgress, Drawer, Divider, Select, MenuItem, FormControl, InputLabel, ListItemIcon, Snackbar } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon, Work as WorkIcon, Person as PersonIcon, ShoppingCart as ShoppingIcon, Favorite as HealthIcon, AttachMoney as FinanceIcon, Category as CategoryIcon } from '@mui/icons-material';
 
 interface Task {
@@ -35,79 +35,124 @@ const App: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [taskCategory, setTaskCategory] = useState<string>('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const showError = (message: string) => {
+    setError(message);
+    setTimeout(() => setError(null), 5000);
+  };
+
+  const retryOperation = async (operation: () => Promise<any>, maxRetries = 3) => {
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        return await operation();
+      } catch (err) {
+        if (i === maxRetries - 1) throw err;
+        await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, i)));
+      }
+    }
+  };
+
+  const fetchTasks = useCallback(async () => {
+    setLoading(true);
+    try {
+      const result = await retryOperation(() => backend.getTasks());
+      if ('ok' in result) {
+        setTasks(result.ok);
+      } else {
+        showError(`Error fetching tasks: ${result.err}`);
+      }
+    } catch (error) {
+      showError(`Failed to fetch tasks: ${error}`);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchCategories = useCallback(async () => {
+    try {
+      const result = await retryOperation(() => backend.getCategories());
+      if ('ok' in result) {
+        setCategories(result.ok);
+        if (result.ok.length > 0 && !taskCategory) {
+          setTaskCategory(result.ok[0].name);
+        }
+      } else {
+        showError(`Error fetching categories: ${result.err}`);
+      }
+    } catch (error) {
+      showError(`Failed to fetch categories: ${error}`);
+    }
+  }, [taskCategory]);
 
   useEffect(() => {
     fetchTasks();
     fetchCategories();
-  }, []);
-
-  const fetchTasks = async () => {
-    setLoading(true);
-    try {
-      const fetchedTasks = await backend.getTasks();
-      setTasks(fetchedTasks);
-    } catch (error) {
-      console.error('Error fetching tasks:', error);
-    }
-    setLoading(false);
-  };
-
-  const fetchCategories = async () => {
-    try {
-      const fetchedCategories = await backend.getCategories();
-      setCategories(fetchedCategories);
-      if (fetchedCategories.length > 0 && !taskCategory) {
-        setTaskCategory(fetchedCategories[0].name);
-      }
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-    }
-  };
+  }, [fetchTasks, fetchCategories]);
 
   const addTask = async () => {
     if (newTask.trim() === '') return;
     setLoading(true);
     try {
-      await backend.addTask(newTask, taskCategory);
-      setNewTask('');
-      await fetchTasks();
+      const result = await retryOperation(() => backend.addTask(newTask, taskCategory));
+      if ('ok' in result) {
+        setNewTask('');
+        await fetchTasks();
+      } else {
+        showError(`Error adding task: ${result.err}`);
+      }
     } catch (error) {
-      console.error('Error adding task:', error);
+      showError(`Failed to add task: ${error}`);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const addCategory = async () => {
     if (newCategory.trim() === '') return;
     try {
-      await backend.addCategory(newCategory);
-      setNewCategory('');
-      await fetchCategories();
+      const result = await retryOperation(() => backend.addCategory(newCategory));
+      if ('ok' in result) {
+        setNewCategory('');
+        await fetchCategories();
+      } else {
+        showError(`Error adding category: ${result.err}`);
+      }
     } catch (error) {
-      console.error('Error adding category:', error);
+      showError(`Failed to add category: ${error}`);
     }
   };
 
   const toggleTask = async (id: bigint) => {
     setLoading(true);
     try {
-      await backend.completeTask(id);
-      await fetchTasks();
+      const result = await retryOperation(() => backend.completeTask(id));
+      if ('ok' in result) {
+        await fetchTasks();
+      } else {
+        showError(`Error toggling task: ${result.err}`);
+      }
     } catch (error) {
-      console.error('Error toggling task:', error);
+      showError(`Failed to toggle task: ${error}`);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const deleteTask = async (id: bigint) => {
     setLoading(true);
     try {
-      await backend.deleteTask(id);
-      await fetchTasks();
+      const result = await retryOperation(() => backend.deleteTask(id));
+      if ('ok' in result) {
+        await fetchTasks();
+      } else {
+        showError(`Error deleting task: ${result.err}`);
+      }
     } catch (error) {
-      console.error('Error deleting task:', error);
+      showError(`Failed to delete task: ${error}`);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const filteredTasks = selectedCategory === 'All' ? tasks : tasks.filter(task => task.category === selectedCategory);
@@ -240,6 +285,12 @@ const App: React.FC = () => {
           )}
         </Container>
       </div>
+      <Snackbar
+        open={error !== null}
+        message={error}
+        autoHideDuration={5000}
+        onClose={() => setError(null)}
+      />
     </div>
   );
 };

@@ -6,17 +6,38 @@ type Task =
    description: text;
    id: nat;
  };
+type Result_3 = 
+ variant {
+   err: text;
+   ok: nat;
+ };
+type Result_2 = 
+ variant {
+   err: text;
+   ok;
+ };
+type Result_1 = 
+ variant {
+   err: text;
+   ok: vec Category;
+ };
+type Result = 
+ variant {
+   err: text;
+   ok: vec Task;
+ };
 type Category = 
  record {
    id: nat;
    name: text;
  };
 service : {
-  addCategory: (text) -> (nat);
-  addTask: (text, text) -> (nat);
-  completeTask: (nat) -> ();
-  deleteCategory: (nat) -> ();
-  deleteTask: (nat) -> ();
-  getCategories: () -> (vec Category) query;
-  getTasks: () -> (vec Task) query;
+  addCategory: (text) -> (Result_3);
+  addTask: (text, text) -> (Result_3);
+  completeTask: (nat) -> (Result_2);
+  deleteCategory: (nat) -> (Result_2);
+  deleteTask: (nat) -> (Result_2);
+  getCategories: () -> (Result_1) query;
+  getTasks: () -> (Result) query;
+  healthCheck: () -> (text) query;
 }
