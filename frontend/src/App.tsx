@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { backend } from 'declarations/backend';
-import { AppBar, Toolbar, Typography, Container, List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, TextField, Button, Checkbox, CircularProgress, Drawer, Divider, Select, MenuItem, FormControl, InputLabel, ListItemIcon, Snackbar } from '@mui/material';
+import { AppBar, Toolbar, Typography, Container, List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, TextField, Button, Checkbox, CircularProgress, Drawer, Divider, Select, MenuItem, FormControl, InputLabel, ListItemIcon, Snackbar, Paper } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon, Work as WorkIcon, Person as PersonIcon, ShoppingCart as ShoppingIcon, Favorite as HealthIcon, AttachMoney as FinanceIcon, Category as CategoryIcon } from '@mui/icons-material';
 
 interface Task {
@@ -215,48 +215,47 @@ const App: React.FC = () => {
             </Typography>
           </Toolbar>
         </AppBar>
-        <Container maxWidth="sm" className="mt-8">
-          <div className="mb-4 flex items-center">
-            <TextField
-              variant="outlined"
-              placeholder="Add a new task"
-              value={newTask}
-              onChange={(e) => setNewTask(e.target.value)}
-              className="flex-grow mr-2"
-            />
-            <FormControl variant="outlined" className="min-w-[120px]">
-              <Select
-                value={taskCategory}
-                onChange={(e) => setTaskCategory(e.target.value as string)}
-                displayEmpty
-                renderValue={(value) => (
-                  <div className="flex items-center">
-                    {getCategoryIcon(value as string)}
-                    <span className="ml-2">{value}</span>
-                  </div>
-                )}
-                className="bg-gray-100 rounded-full h-[40px]"
+        <Container maxWidth="md" className="mt-8">
+          <Paper elevation={3} className="p-6 mb-6">
+            <Typography variant="h6" className="mb-4 text-black">Add New Task</Typography>
+            <div className="flex items-center space-x-4">
+              <TextField
+                variant="outlined"
+                placeholder="Enter task description"
+                value={newTask}
+                onChange={(e) => setNewTask(e.target.value)}
+                className="flex-grow"
+                multiline
+                rows={2}
+              />
+              <FormControl variant="outlined" className="min-w-[150px]">
+                <InputLabel>Category</InputLabel>
+                <Select
+                  value={taskCategory}
+                  onChange={(e) => setTaskCategory(e.target.value as string)}
+                  label="Category"
+                >
+                  {categories.map((category) => (
+                    <MenuItem key={Number(category.id)} value={category.name}>
+                      <ListItemIcon>
+                        {getCategoryIcon(category.name)}
+                      </ListItemIcon>
+                      <ListItemText primary={category.name} />
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={addTask}
+                disabled={loading}
+                size="large"
               >
-                {categories.map((category) => (
-                  <MenuItem key={Number(category.id)} value={category.name}>
-                    <ListItemIcon>
-                      {getCategoryIcon(category.name)}
-                    </ListItemIcon>
-                    <ListItemText primary={category.name} />
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={addTask}
-              disabled={loading}
-              className="ml-2"
-            >
-              Add
-            </Button>
-          </div>
+                Add Task
+              </Button>
+            </div>
+          </Paper>
           {loading ? (
             <div className="flex justify-center">
               <CircularProgress />
